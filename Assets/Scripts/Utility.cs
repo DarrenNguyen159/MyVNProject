@@ -41,8 +41,6 @@ namespace DN
             {
                 str += "\"" + entry.Key + "\":";
 
-                Debug.Log("" + entry.Value.GetType().Name + " == " + typeof(JSONTemplate).Name);
-
                 if (entry.Value.GetType().Name == typeof(JSONTemplate).Name)
                 {
                     // child object
@@ -70,44 +68,91 @@ namespace DN
     public class JSONParserTemplate
     {
         private string str;
-        private List<string> entries;
-
         public Dictionary<string, string> map;
 
         public JSONParserTemplate(string str)
         {
             this.str = str;
-            entries = new List<string>();
             map = new Dictionary<string, string>();
+
+            Parse();
+        }
+
+        public override string ToString()
+        {
+            return str;
         }
 
         public void Parse()
         {
             string s = "" + this.str;
 
-            s = s.Trim();
+            s = Regex.Replace(s, "(\"(?:[^\"\\\\]|\\\\.)*\")|\\s+", "$1");
 
+            // bỏ ngoặc đầu cuối
+            if (s.Length == 0) {
+                return;
+            }
             s = s.Remove(0, s.IndexOf("{", System.StringComparison.Ordinal) + 1);
             s = s.Remove(s.LastIndexOf("}", System.StringComparison.Ordinal));
 
-            Regex regex = new Regex(@"(""[\w]+"":)((""[^""]*"")|((-)?[\d]+((.)[\d]+)?)|({[""\s\S]+}))");
-            MatchCollection matchCollection = regex.Matches(s);
-
             // tách các entries
-            foreach (Match match in matchCollection)
+            while (true)
             {
-                if (match.Value.Length > 0)
+                if (s.IndexOf(":") == -1)
                 {
-                    entries.Add(match.Value);
+                    break;
                 }
-            }
+                if (s[0] == ',')
+                {
+                    s = s.Substring(1);
+                }
 
-            // từng entries tách thành key và value
-            foreach (string entry in entries)
-            {
-                string key = entry.Substring(1, entry.IndexOf(":", System.StringComparison.Ordinal) - 2);
-                string value = entry.Substring(entry.IndexOf(":", System.StringComparison.Ordinal) + 1, entry.Length - entry.IndexOf(":", System.StringComparison.Ordinal) - 1);
-                map.Add(key, value);
+                string key = s.Substring(0, s.IndexOf(":")); // còn dấu ""
+                s = s.Remove(0, key.Length + 1); // bỏ từ đầu cho tới :
+
+                // bỏ dấu ""
+                key = key.Remove(0, key.IndexOf('"') + 1);
+                key = key.Remove(key.LastIndexOf('"'));
+
+                if (s[0] == '{')
+                {// Ngay sau : là { thì đây là JSON con
+                    int semaphore = 0;
+                    int closeBracketIndex = 0;
+                    for (int i = 0; i < s.Length; i++)
+                    {
+                        if (s[i] == '{')
+                        {
+                            semaphore += 1;
+                        }
+                        else if (s[i] == '}')
+                        {
+                            semaphore -= 1;
+                            if (semaphore == 0)
+                            {// tìm được dấu đóng ngoặc
+                                closeBracketIndex = i;
+                                break;
+                            }
+                        }
+                    }
+                    string value = s.Substring(0, closeBracketIndex + 1);
+                    s = s.Remove(0, value.Length);
+                    map.Add(key, value);
+                }
+                else
+                {// Đây là value bình thường
+                    if (s.IndexOf(",") != -1)
+                    {
+                        string value = s.Substring(0, s.IndexOf(","));
+                        s = s.Substring(value.Length + 1);
+                        map.Add(key, value);
+                    }
+                    else
+                    {
+                        string value = s;
+                        map.Add(key, value);
+                    }
+                }
             }
         }
 
@@ -123,6 +168,27 @@ namespace DN
                 ret = ret.Remove(lastIndex, 1);
             }
             return ret;
+        }
+
+        public string GetChildJSONString(string key)
+        {
+            string ret;
+            map.TryGetValue(key, out ret);
+            return ret;
+        }
+
+        public int GetInt(string key)
+        {
+            string ret;
+            map.TryGetValue(key, out ret);
+            if (ret == null)
+            {
+                return -1;
+            }
+            else
+            {
+                return System.Int32.Parse(ret);
+            }
         }
     }
 }

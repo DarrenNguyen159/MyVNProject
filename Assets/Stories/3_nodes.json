@@ -1,0 +1,15 @@
+{
+  "storyName": "3_nodes",
+  "author": "Duy",
+  "nodes": {
+    "0": { "type": "start", "posX": 411, "posY": 26 },
+    "1": { "type": "end", "posX": 899, "posY": 268 },
+    "2": {
+      "type": "dialogue",
+      "name": "Duy",
+      "dialogue": "Cái gì?",
+      "posX": 601,
+      "posY": 167
+    }
+  }
+}

@@ -27,6 +27,7 @@ namespace DN.VN
 
         private string openFilePath = "";
         private string openFileName = "";
+        private string authorInput = "";
 
         // init position
         Rect controlPanelRect;
@@ -84,31 +85,82 @@ namespace DN.VN
             GUILayout.Space(20);
             GUILayout.BeginScrollView(new Vector2(0, 0), panelStyle);
             openFileName = GUILayout.TextField(openFileName);
-
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Author");
+                authorInput = GUILayout.TextField(authorInput, GUILayout.Width(240));
+                GUILayout.EndHorizontal();
+            }
             if (GUILayout.Button("OPEN"))
             {
-                string path = EditorUtility.OpenFilePanel("Open file", openFilePath, "json");
-                if (path.Length > 0)
-                {
-                    openFileName = Path.GetFileName(path);
-                    openFilePath = path.Substring(0, path.Length - openFileName.Length);
-
-                    GUI.changed = true;
-
-                    string jsonString = File.ReadAllText(path);
-
-                    JSONParserTemplate json = new JSONParserTemplate(jsonString);
-                    json.Parse();
-
-                    string storyName = json.GetString("storyName");
-                    openFileName = storyName;
-                }
+                Open();
             }
             if (GUILayout.Button("EXPORT"))
             {
                 Export();
             }
             GUI.EndScrollView();
+        }
+
+        private void Open()
+        {
+            nodes.Clear();
+
+            string path = EditorUtility.OpenFilePanel("Open file", openFilePath, "json");
+            if (path.Length > 0)
+            {
+                openFileName = Path.GetFileName(path);
+                openFilePath = path.Substring(0, path.Length - openFileName.Length);
+
+                GUI.changed = true;
+
+                string jsonString = File.ReadAllText(path);
+
+                JSONParserTemplate json = new JSONParserTemplate(jsonString);
+
+                string storyName = json.GetString("storyName");
+                openFileName = storyName;
+                authorInput = json.GetString("author");
+
+                // vẽ các nodes
+                string nodesString = json.GetChildJSONString("nodes");
+
+                JSONParserTemplate jsonNodes = new JSONParserTemplate(nodesString);
+
+                for (int i = 0; ; i++) 
+                {
+                    string nodeData = jsonNodes.GetChildJSONString("" + i);
+
+                    if (nodeData == null)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        JSONParserTemplate nodeJSON = new JSONParserTemplate(nodeData);
+                        string nodeType = nodeJSON.GetString("type");
+                        int posX = nodeJSON.GetInt("posX");
+                        int posY = nodeJSON.GetInt("posY");
+                        if (nodeType.Equals("start"))
+                        {
+                            StartNode startNode = new StartNode(new Vector2(posX, posY), 100, 100, OnClickOutPoint);
+                            nodes.Add(startNode);
+                        }
+                        else if (nodeType.Equals("end"))
+                        {
+                            EndNode endNode = new EndNode(new Vector2(posX, posY), 100, 100, OnClickInPoint);
+                            nodes.Add(endNode);
+                        }
+                        else if (nodeType.Equals("dialogue"))
+                        {
+                            StoryNode storyNode = new StoryNode(new Vector2(posX, posY), 200, 50, OnClickInPoint, OnClickOutPoint);
+                            storyNode.nameInput = nodeJSON.GetString("name");
+                            storyNode.dialogueInput = nodeJSON.GetString("dialogue");
+                            nodes.Add(storyNode);
+                        }
+                    }
+                }
+            }
         }
 
         private void Export()
@@ -120,7 +172,7 @@ namespace DN.VN
             {
                 Story story = new Story();
                 story.storyName = fileName;
-                story.author = "DN";
+                story.author = authorInput;
                 JSONTemplate json = new JSONTemplate();
                 json.AddKeyValue("storyName", story.storyName);
                 json.AddKeyValue("author", story.author);
@@ -239,7 +291,7 @@ namespace DN.VN
                     break;
 #else
                 case EventType.MouseDrag:
-                    if (e.button == )
+                    if (e.button == 2)
                     {
                         OnDrag(e.delta);
                     }
@@ -268,7 +320,7 @@ namespace DN.VN
         }
 
         private void ProcessNodeEvents(Event e)
-        { 
+        {
             if (nodes != null)
             {
                 for (int i = nodes.Count - 1; i >= 0; i--)

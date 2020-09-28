@@ -1,9 +1,0 @@
-{
-    "storyName": "test_json",
-    "author": "DN",
-    "nodesSerialised": [
-        "{\"AssemblyQualifiedName\":\"DN.VN.Node, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\"TypeName\":\"Node\",\"type\":0,\"id\":-1,\"posX\":500.0,\"posY\":300.0}",
-        "{\"AssemblyQualifiedName\":\"DN.VN.Node, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\"TypeName\":\"Node\",\"type\":100,\"id\":-1,\"posX\":500.0,\"posY\":300.0}",
-        "{\"AssemblyQualifiedName\":\"DN.VN.DialogueNode, Assembly-CSharp, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\",\"TypeName\":\"DialogueNode\",\"type\":1,\"id\":-1,\"posX\":359.0,\"posY\":162.0,\"name\":\"\",\"dialogue\":\"\"}"
-    ]
-}
