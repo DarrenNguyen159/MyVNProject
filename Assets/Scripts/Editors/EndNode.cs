@@ -15,7 +15,6 @@ namespace DN.VN
         public override void Draw()
         {
             inPoint.Draw();
-            outPoint.Draw();
 
             linesCount = 2;
             linesCountCurrent = 0;

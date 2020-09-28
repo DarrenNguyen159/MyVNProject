@@ -29,8 +29,14 @@ namespace DN.VN
         public StoryNode(Vector2 position, float width, float height, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint)
         {
             rect = new Rect(position.x, position.y, width, height);
-            inPoint = new ConnectionPoint(this, ConnectionPointType.In, OnClickInPoint);
-            outPoint = new ConnectionPoint(this, ConnectionPointType.Out, OnClickInPoint);
+            if (OnClickInPoint != null)
+            {
+                inPoint = new ConnectionPoint(this, ConnectionPointType.In, OnClickInPoint);
+            }
+            if (OnClickOutPoint != null)
+            {
+                outPoint = new ConnectionPoint(this, ConnectionPointType.Out, OnClickOutPoint);
+            }
         }
 
         public void Drag(Vector2 delta)
@@ -117,7 +123,7 @@ namespace DN.VN
                     }
                     break;
                 case EventType.KeyDown:
-                    
+
                     break;
             }
 
