@@ -6,6 +6,7 @@ namespace DN.VN
 {
     public class StoryNode
     {
+        public int id;
         public Rect rect;
         public string title;
 
@@ -28,6 +29,7 @@ namespace DN.VN
 
         public StoryNode(Vector2 position, float width, float height, Action<ConnectionPoint> OnClickInPoint, Action<ConnectionPoint> OnClickOutPoint)
         {
+            id = -1;
             rect = new Rect(position.x, position.y, width, height);
             if (OnClickInPoint != null)
             {
@@ -37,6 +39,16 @@ namespace DN.VN
             {
                 outPoint = new ConnectionPoint(this, ConnectionPointType.Out, OnClickOutPoint);
             }
+        }
+
+        public int GetId()
+        {
+            return this.id;
+        }
+
+        public void SetId(int id)
+        {
+            this.id = id;
         }
 
         public void Drag(Vector2 delta)

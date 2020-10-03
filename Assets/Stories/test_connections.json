@@ -1,0 +1,19 @@
+{
+  "storyName": "test_connections",
+  "author": "Duy",
+  "nodes": {
+    "0": { "type": "start", "posX": 368, "posY": 45 },
+    "1": { "type": "end", "posX": 888, "posY": 284 },
+    "2": {
+      "type": "dialogue",
+      "name": "Yiu",
+      "dialogue": "asdja",
+      "posX": 578,
+      "posY": 142
+    }
+  },
+  "connections": {
+    "0": { "fromId": 0, "toId": 2 },
+    "1": { "fromId": 2, "toId": 1 }
+  }
+}

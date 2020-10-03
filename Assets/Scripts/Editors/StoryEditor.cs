@@ -45,10 +45,14 @@ namespace DN.VN
             {
                 nodes = new List<StoryNode>();
             }
+            if (connections == null)
+            {
+                connections = new List<Connection>();
+            }
             StartNode startNode = new StartNode(initialPosition, 100, 100, OnClickOutPoint);
             nodes.Add(startNode);
 
-            EndNode endNode = new EndNode(new Vector2(initialPosition.x + 200, initialPosition.y), 100, 100, OnClickOutPoint);
+            EndNode endNode = new EndNode(new Vector2(initialPosition.x + 200, initialPosition.y), 100, 100, OnClickInPoint);
             nodes.Add(endNode);
 
             controlPanelRect = new Rect(new Vector2(0, 0), new Vector2(300, 500));
@@ -105,6 +109,7 @@ namespace DN.VN
         private void Open()
         {
             nodes.Clear();
+            connections.Clear();
 
             string path = EditorUtility.OpenFilePanel("Open file", openFilePath, "json");
             if (path.Length > 0)
@@ -122,12 +127,12 @@ namespace DN.VN
                 openFileName = storyName;
                 authorInput = json.GetString("author");
 
-                // vẽ các nodes
+                #region vẽ các nodes
                 string nodesString = json.GetChildJSONString("nodes");
 
                 JSONParserTemplate jsonNodes = new JSONParserTemplate(nodesString);
 
-                for (int i = 0; ; i++) 
+                for (int i = 0; ; i++)
                 {
                     string nodeData = jsonNodes.GetChildJSONString("" + i);
 
@@ -141,14 +146,17 @@ namespace DN.VN
                         string nodeType = nodeJSON.GetString("type");
                         int posX = nodeJSON.GetInt("posX");
                         int posY = nodeJSON.GetInt("posY");
+                        int id = i;
                         if (nodeType.Equals("start"))
                         {
                             StartNode startNode = new StartNode(new Vector2(posX, posY), 100, 100, OnClickOutPoint);
+                            startNode.SetId(id);
                             nodes.Add(startNode);
                         }
                         else if (nodeType.Equals("end"))
                         {
                             EndNode endNode = new EndNode(new Vector2(posX, posY), 100, 100, OnClickInPoint);
+                            endNode.SetId(id);
                             nodes.Add(endNode);
                         }
                         else if (nodeType.Equals("dialogue"))
@@ -156,10 +164,38 @@ namespace DN.VN
                             StoryNode storyNode = new StoryNode(new Vector2(posX, posY), 200, 50, OnClickInPoint, OnClickOutPoint);
                             storyNode.nameInput = nodeJSON.GetString("name");
                             storyNode.dialogueInput = nodeJSON.GetString("dialogue");
+                            storyNode.SetId(id);
                             nodes.Add(storyNode);
                         }
                     }
                 }
+                #endregion
+
+                #region Vẽ các connections
+                string connectionsString = json.GetChildJSONString("connections");
+
+                JSONParserTemplate jsonConnections = new JSONParserTemplate(connectionsString);
+
+                for (int i = 0; ; i++)
+                {
+                    string connectionData = jsonConnections.GetChildJSONString("" + i);
+
+                    if (connectionData == null)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        JSONParserTemplate connectionJSON = new JSONParserTemplate(connectionData);
+                        int fromId = connectionJSON.GetInt("fromId");
+                        int toId = connectionJSON.GetInt("toId");
+                        StoryNode outNode = nodes.Find(x => x.GetId() == fromId);
+                        StoryNode inNode = nodes.Find(x => x.GetId() == toId);
+                        Connection connection = new Connection(inNode.inPoint, outNode.outPoint, OnClickRemoveConnection);
+                        connections.Add(connection);
+                    }
+                }
+                #endregion
             }
         }
 
@@ -181,9 +217,21 @@ namespace DN.VN
                 foreach (StoryNode node in nodes)
                 {
                     nodeJSON.AddChildJSON("" + currentId, node.GetJSONObject());
+                    node.SetId(currentId);
                     currentId += 1;
                 }
                 json.AddChildJSON("nodes", nodeJSON);
+
+                currentId = 0;
+                JSONTemplate connectionsJSON = new JSONTemplate();
+                foreach (Connection connection in connections)
+                {
+                    connectionsJSON.AddChildJSON("" + currentId, connection.GetJSONObject());
+                    currentId += 1;
+                }
+
+                json.AddChildJSON("connections", connectionsJSON);
+
                 File.WriteAllText(path, json.GetJSON());
             }
         }

@@ -40,5 +40,13 @@ namespace DN.VN
             }
 
         }
+
+        public JSONTemplate GetJSONObject()
+        {
+            JSONTemplate json = new JSONTemplate();
+            json.AddKeyValue("fromId", this.outPoint.node.GetId());
+            json.AddKeyValue("toId", this.inPoint.node.GetId());
+            return json;
+        }
     }
 }

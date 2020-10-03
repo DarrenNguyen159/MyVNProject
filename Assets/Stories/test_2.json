@@ -1,1 +1,1 @@
-{"storyName":"test_2","author":"duy","nodes":{"id_0":{"type":"start","posX":500,"posY":300},"id_1":{"type":"end","posX":700,"posY":300}}}
+{"storyName":"abc","author":"Oanh","nodes":{"0":{"type":"start","posX":369,"posY":109},"1":{"type":"end","posX":1135,"posY":280},"2":{"type":"dialogue","name":"asdas","dialogue":"qweqwe","posX":558,"posY":128},"3":{"type":"dialogue","name":"eqw","dialogue":"31","posX":832,"posY":242}}}
